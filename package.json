@@ -1,0 +1,45 @@
+{
+  "name": "cs-helsinki-blog",
+  "version": "1.0.0",
+  "description": "blog-list",
+  "main": "index.ts",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.ts",
+    "lint:fix": "eslint --ext .ts --quiet --fix --ignore-path ./.gitignore",
+    "lint:format": "prettier  --loglevel warn --write \"./**/*.{ts,tsx,css,md}\" ",
+    "lint": "npm run lint:format && npm run lint:fix "
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pawelzysk1989/cs-helsinki-blog.git"
+  },
+  "author": "Pawel Zysk",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pawelzysk1989/cs-helsinki-blog/issues"
+  },
+  "homepage": "https://github.com/pawelzysk1989/cs-helsinki-blog#readme",
+  "devDependencies": {
+    "@types/cors": "^2.8.12",
+    "@types/express": "^4.17.13",
+    "@types/mongoose": "^5.11.97",
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/parser": "^5.4.0",
+    "dotenv": "^10.0.0",
+    "eslint": "^8.2.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-simple-import-sort": "^7.0.0",
+    "nodemon": "^2.0.15",
+    "prettier": "^2.4.1",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.4.4"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "mongoose": "^6.0.13"
+  }
+}
