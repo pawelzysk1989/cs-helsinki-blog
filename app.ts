@@ -9,10 +9,11 @@ import middleware from './utils/middleware';
 
 const app = express();
 
-logger.info('connecting to', config.MONGODB_URI);
+const mongoUri = config.MONGODB_URI ?? '';
+logger.info('connecting to', mongoUri);
 
 mongoose
-  .connect(config.MONGODB_URI ?? '')
+  .connect(mongoUri)
   .then(() => {
     logger.info('connected to MongoDB');
   })
