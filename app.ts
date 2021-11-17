@@ -3,16 +3,16 @@ import express from 'express';
 import mongoose from 'mongoose';
 
 import blogRouter from './controllers/blog';
-import { MONGODB_URI } from './utils/config';
+import config from './utils/config';
 import logger from './utils/logger';
 import middleware from './utils/middleware';
 
 const app = express();
 
-logger.info('connecting to', MONGODB_URI);
+logger.info('connecting to', config.MONGODB_URI);
 
 mongoose
-  .connect(MONGODB_URI ?? '')
+  .connect(config.MONGODB_URI ?? '')
   .then(() => {
     logger.info('connected to MongoDB');
   })

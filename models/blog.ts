@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 
 import { Blog } from '../types/blog';
-import { MONGODB_URI } from '../utils/config';
 
 const blogSchema = new mongoose.Schema<Blog>({
   title: String,
@@ -9,9 +8,6 @@ const blogSchema = new mongoose.Schema<Blog>({
   url: String,
   likes: Number,
 });
-
-const mongoUrl = MONGODB_URI;
-mongoose.connect(mongoUrl ?? '');
 
 blogSchema.set('toJSON', {
   transform: (_document, returnedObject) => {
