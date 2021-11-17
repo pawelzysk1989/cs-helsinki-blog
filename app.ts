@@ -1,11 +1,11 @@
-import { MONGODB_URI } from './utils/config';
-
-import express from 'express';
 import cors from 'cors';
-import blogRouter from './controllers/blog';
-import middleware from './utils/middleware';
-import logger from './utils/logger';
+import express from 'express';
 import mongoose from 'mongoose';
+
+import blogRouter from './controllers/blog';
+import { MONGODB_URI } from './utils/config';
+import logger from './utils/logger';
+import middleware from './utils/middleware';
 
 const app = express();
 

@@ -9,10 +9,25 @@
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
-  "plugins": ["simple-import-sort", "@typescript-eslint", "prettier"],
+  "plugins": ["@typescript-eslint", "simple-import-sort", "prettier"],
   "rules": {
     "prettier/prettier": ["error", {}, { "usePrettierrc": true }],
     "simple-import-sort/imports": "error",
-    "simple-import-sort/exports": "error"
+    "simple-import-sort/exports": "error",
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "js": "never",
+        "ts": "never"
+      }
+    ]
+  },
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".ts"]
+      }
+    }
   }
 }
