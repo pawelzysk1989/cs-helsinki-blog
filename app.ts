@@ -7,6 +7,8 @@ import config from './utils/config';
 import logger from './utils/logger';
 import middleware from './utils/middleware';
 
+require('express-async-errors');
+
 const app = express();
 
 const mongoUri = config.MONGODB_URI ?? '';
@@ -25,7 +27,7 @@ app.use(cors());
 app.use(express.json());
 app.use(middleware.requestLogger);
 
-app.use('/api/blogs', blogRouter);
+app.use('/api/blog', blogRouter);
 
 app.use(middleware.unknownEndpoint);
 app.use(middleware.errorHandler);
