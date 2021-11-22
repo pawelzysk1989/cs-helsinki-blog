@@ -1,9 +1,9 @@
-GET http://localhost:3001/api/blog
+GET http://localhost:3001/api/blogs
 
 ###
 
 
-POST http://localhost:3001/api/blog
+POST http://localhost:3001/api/blogs
 content-type: application/json
 
 {
