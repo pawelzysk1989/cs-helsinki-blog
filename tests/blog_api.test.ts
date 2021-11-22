@@ -8,6 +8,11 @@ import blogFixture from './fixtures/blog';
 
 const api = supertest(app);
 
+const getBlogsFromDb = async () => {
+  const blogs = await BlogModel.find({});
+  return blogs.map((blog) => blog.toJSON());
+};
+
 describe('when there is initially some blogs saved', () => {
   beforeEach(async () => {
     await BlogModel.deleteMany({});
@@ -55,7 +60,7 @@ describe('when there is initially some blogs saved', () => {
         .expect(201)
         .expect('Content-Type', /application\/json/);
 
-      const blogsInDb = await BlogModel.find({});
+      const blogsInDb = await getBlogsFromDb();
       expect(blogsInDb).toHaveLength(blogFixture.blogs.length + 1);
 
       expect(blogsInDb).toEqual(
@@ -84,8 +89,49 @@ describe('when there is initially some blogs saved', () => {
           likes: 123,
         })
         .expect(400);
-      const blogsInDb = await BlogModel.find({});
+      const blogsInDb = await getBlogsFromDb();
       expect(blogsInDb).toHaveLength(blogFixture.blogs.length);
+    });
+  });
+
+  describe('DELETE /api/blogs/:id', () => {
+    test('succeeds with status code 204 if id is valid', async () => {
+      const blogsInDb = await getBlogsFromDb();
+      const blogToDelete = blogsInDb[0];
+
+      await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204);
+      const blogsInDbAfter = await getBlogsFromDb();
+      expect(blogsInDbAfter).toHaveLength(blogsInDb.length - 1);
+      const titles = blogsInDbAfter.map((blog) => blog.title);
+      expect(titles).not.toContain(blogToDelete.title);
+    });
+  });
+
+  describe('PUT api/blogs/:id', () => {
+    test('succeeds with valid data', async () => {
+      const blogsInDb = await getBlogsFromDb();
+      const blogToUpdate = blogsInDb[0];
+
+      const updatedData: Omit<Blog, 'id'> = {
+        title: 'New blog',
+        author: 'John Doe',
+        url: 'Some url',
+        likes: 1,
+      };
+
+      const response = await api
+        .put(`/api/blogs/${blogToUpdate.id}`)
+        .send(updatedData)
+        .expect(200)
+        .expect('Content-Type', /application\/json/);
+
+      const blogsInDbAfter = await getBlogsFromDb();
+      expect(blogsInDbAfter).toContainEqual(response.body);
+      expect(blogsInDbAfter).toHaveLength(blogsInDb.length);
+      expect(response.body).toEqual({
+        id: blogToUpdate.id,
+        ...updatedData,
+      });
     });
   });
 
