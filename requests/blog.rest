@@ -9,12 +9,13 @@ content-type: application/json
     "title": "Title",
     "author": "Author",
     "url": "Url",
-    "likes": 123
+    "likes": 123,
+    "userId": "61a076d26cf1c7f64fa85dd4"
 }
 
 ###
 
-DELETE http://localhost:3001/api/blogs/619c065197982bf3a6b54ac0
+DELETE http://localhost:3001/api/blogs/619c064797982bf3a6b54abe
 
 ###
 

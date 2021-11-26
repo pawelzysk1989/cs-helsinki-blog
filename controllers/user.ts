@@ -7,7 +7,7 @@ import { UserNotRegistered } from '../types';
 const userRouter = Router();
 
 userRouter.get('/', async (_request, response) => {
-  const users = await UserModel.find({});
+  const users = await UserModel.find({}).populate('blogs');
   response.json(users);
 });
 
