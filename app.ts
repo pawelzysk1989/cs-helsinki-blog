@@ -5,6 +5,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 
 import blogRouter from './controllers/blog';
+import userRouter from './controllers/user';
 import config from './utils/config';
 import logger from './utils/logger';
 import middleware from './utils/middleware';
@@ -27,6 +28,7 @@ app.use(cors());
 app.use(express.json());
 app.use(middleware.requestLogger);
 
+app.use('/api/users', userRouter);
 app.use('/api/blogs', blogRouter);
 
 app.use(middleware.unknownEndpoint);
