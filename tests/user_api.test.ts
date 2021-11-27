@@ -35,6 +35,48 @@ describe('when there is initially one user in db', () => {
       expect(usernames).toContain(newUser.username);
     });
 
+    test('creation fails with username too short', async () => {
+      const usersAtStart = await userApiHelper.getAll();
+
+      const newUser = {
+        username: 'ro',
+        name: 'Superuser',
+        password: 'salainen',
+      };
+
+      const result = await api
+        .post('/api/users')
+        .send(newUser)
+        .expect(400)
+        .expect('Content-Type', /application\/json/);
+
+      expect(result.body.error).toContain(
+        '`username` (`ro`) is shorter than the minimum allowed length (3).',
+      );
+
+      const usersAtEnd = await userApiHelper.getAll();
+      expect(usersAtEnd).toHaveLength(usersAtStart.length);
+    });
+    test('creation fails with password too short', async () => {
+      const usersAtStart = await userApiHelper.getAll();
+
+      const newUser = {
+        username: 'root',
+        name: 'Superuser',
+        password: 'sa',
+      };
+
+      const result = await api
+        .post('/api/users')
+        .send(newUser)
+        .expect(400)
+        .expect('Content-Type', /application\/json/);
+
+      expect(result.body.error).toContain(`Password must be at least 3 characters long.`);
+
+      const usersAtEnd = await userApiHelper.getAll();
+      expect(usersAtEnd).toHaveLength(usersAtStart.length);
+    });
     test('creation fails with proper statuscode and message if username already taken', async () => {
       const usersAtStart = await userApiHelper.getAll();
 
@@ -50,7 +92,7 @@ describe('when there is initially one user in db', () => {
         .expect(400)
         .expect('Content-Type', /application\/json/);
 
-      expect(result.body.error).toContain('`username` to be unique');
+      expect(result.body.error).toContain('root is already taken');
 
       const usersAtEnd = await userApiHelper.getAll();
       expect(usersAtEnd).toHaveLength(usersAtStart.length);

@@ -54,7 +54,7 @@ describe('when there is initially some blogs saved', () => {
       const requestBody: CreateBlogBody = {
         title: 'New blog',
         author: 'John Doe',
-        url: 'Some url',
+        url: 'some_url',
         likes: 123,
         userId: user?._id.toString(),
       };
