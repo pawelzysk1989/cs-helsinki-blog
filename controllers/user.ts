@@ -3,6 +3,8 @@ import { Router } from 'express';
 
 import UserModel from '../models/user';
 import { UserNotRegistered } from '../types';
+import reqestError from '../utils/request_error';
+import validateHelper from '../utils/validate_helper';
 
 const userRouter = Router();
 
@@ -11,18 +13,26 @@ userRouter.get('/', async (_request, response) => {
   response.json(users);
 });
 
-userRouter.post('/', async (request, response) => {
-  const { username, name, password } = request.body as UserNotRegistered;
+userRouter.post('/', async (request, response, next) => {
+  const user: UserNotRegistered = request.body;
 
-  const passwordHash = await bcrypt.hash(password, 10);
+  const userValidation = validateHelper.validate(user, [
+    ({ password }) => validateHelper.minLength({ length: 3, name: 'Password' })(password),
+  ]);
+  if (userValidation?.error) {
+    next(reqestError.create(userValidation.error, 400));
+    return;
+  }
 
-  const user = new UserModel({
-    username,
-    name,
+  const passwordHash = await bcrypt.hash(user.password, 10);
+
+  const userModel = new UserModel({
+    username: user.username,
+    name: user.name,
     passwordHash,
   });
 
-  const savedUser = await user.save();
+  const savedUser = await userModel.save();
 
   response.json(savedUser);
 });

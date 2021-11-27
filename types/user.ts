@@ -6,7 +6,7 @@ export type User = {
 
 export type UserNotRegistered = {
   username: string;
-  name: string;
+  name?: string;
   password: string;
 };
 

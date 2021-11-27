@@ -3,20 +3,23 @@ import supertest from 'supertest';
 
 import app from '../app';
 import BlogModel from '../models/blog';
-import { Blog } from '../types/blog';
+import { BlogResponse, CreateBlogBody, UpdateBlogBody } from '../types/blog';
 import blogFixture from './fixtures/blog';
+import blogApiHelper from './helpers/blog_api';
+import userApiHelper from './helpers/user_api';
 
 const api = supertest(app);
 
-const getBlogsFromDb = async () => {
-  const blogs = await BlogModel.find({});
-  return blogs.map((blog) => blog.toJSON());
-};
+const username = 'aux_user';
 
 describe('when there is initially some blogs saved', () => {
   beforeEach(async () => {
     await BlogModel.deleteMany({});
-    await BlogModel.insertMany(blogFixture.blogs.map(({ id, ...blog }) => blog));
+    await userApiHelper.removeByUsername(username);
+    const createdUser = await userApiHelper.create({ username, password: 'sekret' });
+    await BlogModel.insertMany(
+      blogFixture.blogs.map((blog) => ({ user: createdUser._id, ...blog })),
+    );
   });
 
   describe('GET api/blogs', () => {
@@ -34,73 +37,120 @@ describe('when there is initially some blogs saved', () => {
 
     test('a specific blog is within the returned blogs', async () => {
       const response = await api.get('/api/blogs');
-      const titles = response.body.map((blog: Blog) => blog.title);
+      const titles = response.body.map((blog: BlogResponse) => blog.title);
       expect(titles).toContain('First class tests');
     });
 
     test('id is set as identifier of a blog', async () => {
       const response = await api.get('/api/blogs');
-      const id = response.body.map((blog: Blog) => blog.id)[0];
+      const id = response.body.map((blog: BlogResponse) => blog.id)[0];
       expect(id).toBeDefined();
     });
   });
 
   describe('POST api/blogs', () => {
     test('succeeds with valid data', async () => {
-      const newBlog: Omit<Blog, 'id'> = {
+      const user = await userApiHelper.findByUsername(username);
+      const requestBody: CreateBlogBody = {
         title: 'New blog',
         author: 'John Doe',
         url: 'Some url',
         likes: 123,
+        userId: user?._id.toString(),
       };
 
       await api
         .post('/api/blogs')
-        .send(newBlog)
+        .send(requestBody)
         .expect(201)
         .expect('Content-Type', /application\/json/);
 
-      const blogsInDb = await getBlogsFromDb();
+      const blogsInDb = await blogApiHelper.getAll();
       expect(blogsInDb).toHaveLength(blogFixture.blogs.length + 1);
 
+      const { userId, ...createdBlog } = requestBody;
+
       expect(blogsInDb).toEqual(
-        expect.arrayContaining([expect.objectContaining(newBlog)]),
+        expect.arrayContaining([expect.objectContaining(createdBlog)]),
       );
     });
     test('succeeds with default value if poperty likes is missing', async () => {
-      const newBlog = {
+      const user = await userApiHelper.findByUsername(username);
+      const requestBody: Omit<CreateBlogBody, 'likes'> = {
         title: 'New blog',
         author: 'John Doe',
         url: 'Some url',
+        userId: user?._id.toString(),
       };
-      const response = await api.post('/api/blogs').send(newBlog).expect(201);
-      expect(response.body).toEqual(
+      const result = await api.post('/api/blogs').send(requestBody).expect(201);
+
+      const { userId, ...createdBlog } = requestBody;
+
+      expect(result.body).toEqual(
         expect.objectContaining({
-          ...newBlog,
+          ...createdBlog,
           likes: 0,
         }),
       );
     });
-    test('fails with status code 400 if title and url is missing', async () => {
-      await api
-        .post('/api/blogs')
-        .send({
-          author: 'John Doe',
-          likes: 123,
-        })
-        .expect(400);
-      const blogsInDb = await getBlogsFromDb();
+
+    test('fails with invalid userId', async () => {
+      const nonExistentId = '619c064797982bf3a6b54abe';
+      const requestBody: CreateBlogBody = {
+        title: 'New blog',
+        author: 'John Doe',
+        url: 'Some url',
+        likes: 123,
+        userId: nonExistentId,
+      };
+
+      const result = await api.post('/api/blogs').send(requestBody).expect(404);
+
+      const blogsInDb = await blogApiHelper.getAll();
+      expect(blogsInDb).toHaveLength(blogFixture.blogs.length);
+      expect(result.body.error).toContain(`User with id=${nonExistentId} does not exist`);
+    });
+
+    test('fails with status code 400 if title is missing', async () => {
+      const user = await userApiHelper.findByUsername(username);
+      const requestBody: Omit<CreateBlogBody, 'title'> = {
+        author: 'John Doe',
+        url: 'Some url',
+        likes: 123,
+        userId: user?._id.toString(),
+      };
+
+      const result = await api.post('/api/blogs').send(requestBody).expect(400);
+
+      const blogsInDb = await blogApiHelper.getAll();
+      expect(result.body.error).toContain('`title` is required');
+      expect(blogsInDb).toHaveLength(blogFixture.blogs.length);
+    });
+
+    test('fails with status code 400 if url is missing', async () => {
+      const user = await userApiHelper.findByUsername(username);
+      const requestBody: Omit<CreateBlogBody, 'url'> = {
+        title: 'New blog',
+        author: 'John Doe',
+        likes: 123,
+        userId: user?._id.toString(),
+      };
+
+      const result = await api.post('/api/blogs').send(requestBody).expect(400);
+
+      const blogsInDb = await blogApiHelper.getAll();
+      expect(result.body.error).toContain('`url` is required');
       expect(blogsInDb).toHaveLength(blogFixture.blogs.length);
     });
   });
 
   describe('DELETE /api/blogs/:id', () => {
     test('succeeds with status code 204 if id is valid', async () => {
-      const blogsInDb = await getBlogsFromDb();
+      const blogsInDb = await blogApiHelper.getAll();
       const blogToDelete = blogsInDb[0];
 
       await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204);
-      const blogsInDbAfter = await getBlogsFromDb();
+      const blogsInDbAfter = await blogApiHelper.getAll();
       expect(blogsInDbAfter).toHaveLength(blogsInDb.length - 1);
       const titles = blogsInDbAfter.map((blog) => blog.title);
       expect(titles).not.toContain(blogToDelete.title);
@@ -109,28 +159,35 @@ describe('when there is initially some blogs saved', () => {
 
   describe('PUT api/blogs/:id', () => {
     test('succeeds with valid data', async () => {
-      const blogsInDb = await getBlogsFromDb();
+      const blogsInDb = await blogApiHelper.getAll();
       const blogToUpdate = blogsInDb[0];
 
-      const updatedData: Omit<Blog, 'id'> = {
+      const user = await userApiHelper.findByUsername(username);
+      const requestBody: UpdateBlogBody = {
         title: 'New blog',
         author: 'John Doe',
-        url: 'Some url',
-        likes: 1,
+        likes: 123,
+        url: 'some url',
+        userId: user?._id.toString(),
       };
 
+      const blogId = blogToUpdate.id;
+
       const response = await api
-        .put(`/api/blogs/${blogToUpdate.id}`)
-        .send(updatedData)
+        .put(`/api/blogs/${blogId}`)
+        .send(requestBody)
         .expect(200)
         .expect('Content-Type', /application\/json/);
 
-      const blogsInDbAfter = await getBlogsFromDb();
+      const blogsInDbAfter = await blogApiHelper.getAll();
       expect(blogsInDbAfter).toContainEqual(response.body);
       expect(blogsInDbAfter).toHaveLength(blogsInDb.length);
+
+      const { userId, ...blog } = requestBody;
       expect(response.body).toEqual({
-        id: blogToUpdate.id,
-        ...updatedData,
+        id: blogId,
+        ...blog,
+        user: userId,
       });
     });
   });

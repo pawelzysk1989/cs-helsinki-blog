@@ -1,11 +1,10 @@
 import mongoose from 'mongoose';
-import uniqueValidator from 'mongoose-unique-validator';
 
 import { Blog, UserRegistered } from '../types';
 import schemaHelper from '../utils/schema_helper';
 
 const schema = new mongoose.Schema<UserRegistered & { blogs: Blog[] }>({
-  username: { type: String, required: true, unique: true },
+  username: { type: String, required: true, minlength: 3 },
   name: String,
   passwordHash: { type: String, required: true },
   blogs: [
@@ -16,8 +15,6 @@ const schema = new mongoose.Schema<UserRegistered & { blogs: Blog[] }>({
   ],
 });
 
-schemaHelper.normalize(schema);
-
-schema.plugin(uniqueValidator);
+schemaHelper.normalize(schema, ['passwordHash']);
 
 export default mongoose.model('User', schema);
