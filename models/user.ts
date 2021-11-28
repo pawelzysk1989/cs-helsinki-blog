@@ -1,10 +1,10 @@
 import mongoose from 'mongoose';
 
-import { UserRegistered } from '../types';
+import { UserDB } from '../types';
 import reqestError from '../utils/request_error';
 import schemaHelper from '../utils/schema_helper';
 
-const schema = new mongoose.Schema<UserRegistered & { blogs: mongoose.ObjectId[] }>({
+const schema = new mongoose.Schema<UserDB>({
   username: {
     type: String,
     required: true,

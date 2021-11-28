@@ -1,9 +1,12 @@
 GET http://localhost:3001/api/blogs
+authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhd2VsenlzayIsImlkIjoiNjFhMjcyOTMzNjlmZGM2MTU0ZTQxN2U0IiwiaWF0IjoxNjM4MTM2MTM3fQ.YcW8365DhMGk1Hb95052OaXILGcSPY7xWyROdFtvsHo
 
 ###
 
 POST http://localhost:3001/api/blogs
 content-type: application/json
+authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhd2VsenlzayIsImlkIjoiNjFhMjcyOTMzNjlmZGM2MTU0ZTQxN2U0IiwiaWF0IjoxNjM4MTM2MTM3fQ.YcW8365DhMGk1Hb95052OaXILGcSPY7xWyROdFtvsHo
+
 
 {
     "title": "Title",
