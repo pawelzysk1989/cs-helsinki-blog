@@ -20,8 +20,7 @@ userRouter.post('/', async (request, response, next) => {
     ({ password }) => validateHelper.minLength({ length: 3, name: 'Password' })(password),
   ]);
   if (userValidation?.error) {
-    next(reqestError.create(userValidation.error, 400));
-    return;
+    return next(reqestError.create(userValidation.error, 400));
   }
 
   const passwordHash = await bcrypt.hash(user.password, 10);
@@ -34,7 +33,7 @@ userRouter.post('/', async (request, response, next) => {
 
   const savedUser = await userModel.save();
 
-  response.json(savedUser);
+  return response.json(savedUser);
 });
 
 export default userRouter;

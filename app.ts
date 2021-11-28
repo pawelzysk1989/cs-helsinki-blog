@@ -5,6 +5,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 
 import blogRouter from './controllers/blog';
+import loginRouter from './controllers/login';
 import userRouter from './controllers/user';
 import config from './utils/config';
 import logger from './utils/logger';
@@ -12,11 +13,10 @@ import middleware from './utils/middleware';
 
 const app = express();
 
-const mongoUri = config.MONGODB_URI ?? '';
-logger.info('connecting to', mongoUri);
+logger.info('connecting to', config.MONGODB_URI);
 
 mongoose
-  .connect(mongoUri)
+  .connect(config.MONGODB_URI)
   .then(() => {
     logger.info('connected to MongoDB');
   })
@@ -28,6 +28,7 @@ app.use(cors());
 app.use(express.json());
 app.use(middleware.requestLogger);
 
+app.use('/api/login', loginRouter);
 app.use('/api/users', userRouter);
 app.use('/api/blogs', blogRouter);
 
