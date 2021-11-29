@@ -16,12 +16,12 @@ blogRouter.post('/', async (request, response, next) => {
   if (!user) {
     return next(reqestError.create(`User does not exist`, 404));
   }
-  const blogModel = new BlogModel({
+  const newBlog = new BlogModel({
     ...blog,
     user: user._id,
   });
 
-  const savedBlog = await blogModel.save();
+  const savedBlog = await newBlog.save();
   user.blogs = user.blogs.concat(savedBlog._id);
   await user.save();
   return response.status(201).json(savedBlog);
@@ -37,17 +37,19 @@ blogRouter.delete('/:id', async (request, response, next) => {
     return next(reqestError.create(`User does not exist`, 404));
   }
 
-  const blog = await BlogModel.findById(id);
+  const blogToDelete = await BlogModel.findById(id);
 
-  if (!blog) {
+  if (!blogToDelete) {
     return next(reqestError.create(`Blog does not exist`, 404));
   }
 
-  if (String(user._id) !== String(blog.user)) {
+  if (String(user._id) !== String(blogToDelete.user)) {
     return next(reqestError.create(`User not authorized to delete blog`, 403));
   }
 
-  await blog.delete();
+  user.blogs = user.blogs.filter((blogId) => String(blogId) !== id);
+  await user.save();
+  await blogToDelete.delete();
   return response.status(204).end();
 });
 
@@ -72,10 +74,7 @@ blogRouter.put('/:id', async (request, response, next) => {
     return next(reqestError.create(`User not authorized to update blog`, 403));
   }
 
-  const updatedBlog = await BlogModel.findByIdAndUpdate(id, blog, {
-    new: true,
-    runValidators: true,
-  });
+  const updatedBlog = await BlogModel.findByIdAndUpdate(id, blog, { new: true });
   return response.status(200).json(updatedBlog);
 });
 
