@@ -3,7 +3,7 @@ import supertest from 'supertest';
 
 import app from '../app';
 import BlogModel from '../models/blog';
-import { BlogResponse, CreateBlogBody, UpdateBlogBody } from '../types/blog';
+import { Blog, BlogResponse } from '../types/blog';
 import blogFixture from './fixtures/blog';
 import blogApiHelper from './helpers/blog_api';
 import userApiHelper from './helpers/user_api';
@@ -50,13 +50,11 @@ describe('when there is initially some blogs saved', () => {
 
   describe('POST api/blogs', () => {
     test('succeeds with valid data', async () => {
-      const user = await userApiHelper.findByUsername(username);
-      const requestBody: CreateBlogBody = {
+      const requestBody: Blog = {
         title: 'New blog',
         author: 'John Doe',
         url: 'some_url',
         likes: 123,
-        userId: user?._id.toString(),
       };
 
       await api
@@ -68,23 +66,21 @@ describe('when there is initially some blogs saved', () => {
       const blogsInDb = await blogApiHelper.getAll();
       expect(blogsInDb).toHaveLength(blogFixture.blogs.length + 1);
 
-      const { userId, ...createdBlog } = requestBody;
+      const createdBlog = requestBody;
 
       expect(blogsInDb).toEqual(
         expect.arrayContaining([expect.objectContaining(createdBlog)]),
       );
     });
     test('succeeds with default value if poperty likes is missing', async () => {
-      const user = await userApiHelper.findByUsername(username);
-      const requestBody: Omit<CreateBlogBody, 'likes'> = {
+      const requestBody: Omit<Blog, 'likes'> = {
         title: 'New blog',
         author: 'John Doe',
         url: 'Some url',
-        userId: user?._id.toString(),
       };
       const result = await api.post('/api/blogs').send(requestBody).expect(201);
 
-      const { userId, ...createdBlog } = requestBody;
+      const createdBlog = requestBody;
 
       expect(result.body).toEqual(
         expect.objectContaining({
@@ -96,12 +92,11 @@ describe('when there is initially some blogs saved', () => {
 
     test('fails with invalid userId', async () => {
       const nonExistentId = '619c064797982bf3a6b54abe';
-      const requestBody: CreateBlogBody = {
+      const requestBody: Blog = {
         title: 'New blog',
         author: 'John Doe',
         url: 'Some url',
         likes: 123,
-        userId: nonExistentId,
       };
 
       const result = await api.post('/api/blogs').send(requestBody).expect(404);
@@ -112,12 +107,10 @@ describe('when there is initially some blogs saved', () => {
     });
 
     test('fails with status code 400 if title is missing', async () => {
-      const user = await userApiHelper.findByUsername(username);
-      const requestBody: Omit<CreateBlogBody, 'title'> = {
+      const requestBody: Omit<Blog, 'title'> = {
         author: 'John Doe',
         url: 'Some url',
         likes: 123,
-        userId: user?._id.toString(),
       };
 
       const result = await api.post('/api/blogs').send(requestBody).expect(400);
@@ -128,12 +121,10 @@ describe('when there is initially some blogs saved', () => {
     });
 
     test('fails with status code 400 if url is missing', async () => {
-      const user = await userApiHelper.findByUsername(username);
-      const requestBody: Omit<CreateBlogBody, 'url'> = {
+      const requestBody: Omit<Blog, 'url'> = {
         title: 'New blog',
         author: 'John Doe',
         likes: 123,
-        userId: user?._id.toString(),
       };
 
       const result = await api.post('/api/blogs').send(requestBody).expect(400);
@@ -162,13 +153,11 @@ describe('when there is initially some blogs saved', () => {
       const blogsInDb = await blogApiHelper.getAll();
       const blogToUpdate = blogsInDb[0];
 
-      const user = await userApiHelper.findByUsername(username);
-      const requestBody: UpdateBlogBody = {
+      const requestBody: Blog = {
         title: 'New blog',
         author: 'John Doe',
         likes: 123,
         url: 'some url',
-        userId: user?._id.toString(),
       };
 
       const blogId = blogToUpdate.id;
@@ -183,11 +172,10 @@ describe('when there is initially some blogs saved', () => {
       expect(blogsInDbAfter).toContainEqual(response.body);
       expect(blogsInDbAfter).toHaveLength(blogsInDb.length);
 
-      const { userId, ...blog } = requestBody;
+      const blog = requestBody;
       expect(response.body).toEqual({
         id: blogId,
         ...blog,
-        user: userId,
       });
     });
   });

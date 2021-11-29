@@ -1,8 +1,6 @@
 import { Router } from 'express';
 
 import BlogModel from '../models/blog';
-import UserModel from '../models/user';
-import { CreateBlogBody, UpdateBlogBody } from '../types';
 import reqestError from '../utils/request_error';
 
 const blogRouter = Router();
@@ -13,9 +11,7 @@ blogRouter.get('/', async (_request, response) => {
 });
 
 blogRouter.post('/', async (request, response, next) => {
-  const blog: CreateBlogBody = request.body;
-
-  const { user } = request;
+  const { user, body: blog } = request;
 
   if (!user) {
     return next(reqestError.create(`User does not exist`, 404));
@@ -31,24 +27,56 @@ blogRouter.post('/', async (request, response, next) => {
   return response.status(201).json(savedBlog);
 });
 
-blogRouter.delete('/:id', async (request, response) => {
-  const { id } = request.params;
-  await BlogModel.findByIdAndRemove(id);
-  response.status(204).end();
+blogRouter.delete('/:id', async (request, response, next) => {
+  const {
+    user,
+    params: { id },
+  } = request;
+
+  if (!user) {
+    return next(reqestError.create(`User does not exist`, 404));
+  }
+
+  const blog = await BlogModel.findById(id);
+
+  if (!blog) {
+    return next(reqestError.create(`Blog does not exist`, 404));
+  }
+
+  if (String(user._id) !== String(blog.user)) {
+    return next(reqestError.create(`User not authorized to delete blog`, 403));
+  }
+
+  await blog.delete();
+  return response.status(204).end();
 });
 
 blogRouter.put('/:id', async (request, response, next) => {
-  const { userId, ...blog }: UpdateBlogBody = request.body;
-  const user = await UserModel.findById(userId);
+  const {
+    user,
+    body: blog,
+    params: { id },
+  } = request;
+
   if (!user) {
-    return next(reqestError.create(`User with id=${userId} does not exist`, 404));
+    return next(reqestError.create(`User does not exist`, 404));
   }
 
-  const updatedBlog = await BlogModel.findByIdAndUpdate(request.params.id, blog, {
+  const blogToUpdate = await BlogModel.findById(id);
+
+  if (!blogToUpdate) {
+    return next(reqestError.create(`Blog does not exist`, 404));
+  }
+
+  if (String(user._id) !== String(blogToUpdate.user)) {
+    return next(reqestError.create(`User not authorized to update blog`, 403));
+  }
+
+  const updatedBlog = await BlogModel.findByIdAndUpdate(id, blog, {
     new: true,
     runValidators: true,
   });
-  return response.json(updatedBlog);
+  return response.status(200).json(updatedBlog);
 });
 
 export default blogRouter;

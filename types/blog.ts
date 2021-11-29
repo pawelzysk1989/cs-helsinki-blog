@@ -1,8 +1,14 @@
+import { Document, ObjectId } from 'mongoose';
+
 export interface Blog {
   title: string;
   author: string;
   url: string;
   likes: number;
+}
+
+export interface BlogDB extends Blog, Document {
+  user: ObjectId;
 }
 
 export interface BlogResponse {
@@ -12,11 +18,3 @@ export interface BlogResponse {
   url: string;
   likes: number;
 }
-
-export type CreateBlogBody = Blog & {
-  userId: string;
-};
-
-export type UpdateBlogBody = Blog & {
-  userId: string;
-};

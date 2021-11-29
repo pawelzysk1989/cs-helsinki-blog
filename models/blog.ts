@@ -1,15 +1,16 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
-import { Blog } from '../types';
+import { BlogDB } from '../types';
 import schemaHelper from '../utils/schema_helper';
 
-const schema = new mongoose.Schema<Blog & { user: mongoose.ObjectId }>({
+const schema = new Schema<BlogDB>({
   title: { type: String, required: true },
   author: { type: String, required: true },
   url: { type: String, required: true },
   likes: { type: Number, default: 0 },
   user: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
+    required: true,
     ref: 'User',
   },
 });
