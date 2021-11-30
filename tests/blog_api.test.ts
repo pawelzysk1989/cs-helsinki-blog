@@ -11,40 +11,59 @@ import userApiHelper from './helpers/user_api';
 const api = supertest(app);
 
 const username = 'aux_user';
+const password = 'sekret';
+
+let token = '';
 
 describe('when there is initially some blogs saved', () => {
   beforeEach(async () => {
     await BlogModel.deleteMany({});
     await userApiHelper.removeByUsername(username);
-    const createdUser = await userApiHelper.create({ username, password: 'sekret' });
+    const createdUser = await userApiHelper.create({ username, password });
     await BlogModel.insertMany(
       blogFixture.blogs.map((blog) => ({ user: createdUser._id, ...blog })),
     );
+    const loginResponse = await api.post('/api/login').send({
+      username,
+      password,
+    });
+    token = loginResponse.body.token;
   });
 
   describe('GET api/blogs', () => {
-    test('blogs are returned as json', async () => {
-      await api
-        .get('/api/blogs')
-        .expect(200)
-        .expect('Content-Type', /application\/json/);
-    });
+    describe('with authorization', () => {
+      test('blogs are returned as json', async () => {
+        await api
+          .get('/api/blogs')
+          .set({
+            Authorization: `bearer ${token}`,
+          })
+          .expect(200)
+          .expect('Content-Type', /application\/json/);
+      });
 
-    test('all blogs are returned', async () => {
-      const response = await api.get('/api/blogs');
-      expect(response.body).toHaveLength(blogFixture.blogs.length);
-    });
+      test('all blogs are returned', async () => {
+        const response = await api.get('/api/blogs').set({
+          Authorization: `bearer ${token}`,
+        });
+        expect(response.body).toHaveLength(blogFixture.blogs.length);
+      });
 
-    test('a specific blog is within the returned blogs', async () => {
-      const response = await api.get('/api/blogs');
-      const titles = response.body.map((blog: BlogResponse) => blog.title);
-      expect(titles).toContain('First class tests');
-    });
+      test('a specific blog is within the returned blogs', async () => {
+        const response = await api.get('/api/blogs').set({
+          Authorization: `bearer ${token}`,
+        });
+        const titles = response.body.map((blog: BlogResponse) => blog.title);
+        expect(titles).toContain('First class tests');
+      });
 
-    test('id is set as identifier of a blog', async () => {
-      const response = await api.get('/api/blogs');
-      const id = response.body.map((blog: BlogResponse) => blog.id)[0];
-      expect(id).toBeDefined();
+      test('id is set as identifier of a blog', async () => {
+        const response = await api.get('/api/blogs').set({
+          Authorization: `bearer ${token}`,
+        });
+        const id = response.body.map((blog: BlogResponse) => blog.id)[0];
+        expect(id).toBeDefined();
+      });
     });
   });
 

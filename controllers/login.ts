@@ -3,21 +3,22 @@ import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 
 import User from '../models/user';
+import { LoginRequestBody } from '../types/login';
 import config from '../utils/config';
 import reqestError from '../utils/request_error';
 
 const loginRouter = Router();
 
 loginRouter.post('/', async (request, response, next) => {
-  const { body } = request;
+  const { username, password }: LoginRequestBody = request.body;
 
-  const user = await User.findOne({ username: body.username });
+  const user = await User.findOne({ username });
 
   if (!user) {
     return next(reqestError.create('invalid username', 401));
   }
 
-  const isPasswordCorrect = await bcrypt.compare(body.password, user.passwordHash);
+  const isPasswordCorrect = await bcrypt.compare(password, user.passwordHash);
 
   if (!isPasswordCorrect) {
     return next(reqestError.create('invalid password', 401));
