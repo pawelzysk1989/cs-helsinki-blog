@@ -1,14 +1,11 @@
 import mongoose from 'mongoose';
-import supertest from 'supertest';
 
-import app from '../app';
 import BlogModel from '../models/blog';
 import { Blog, BlogResponse } from '../types/blog';
 import blogFixture from './fixtures/blog';
+import api from './helpers/api';
 import blogApiHelper from './helpers/blog_api';
 import userApiHelper from './helpers/user_api';
-
-const api = supertest(app);
 
 const username = 'aux_user';
 const password = 'sekret';
@@ -34,35 +31,33 @@ describe('when there is initially some blogs saved', () => {
     describe('with authorization', () => {
       test('blogs are returned as json', async () => {
         await api
-          .get('/api/blogs')
-          .set({
-            Authorization: `bearer ${token}`,
-          })
+          .get('/api/blogs', token)
           .expect(200)
           .expect('Content-Type', /application\/json/);
       });
 
       test('all blogs are returned', async () => {
-        const response = await api.get('/api/blogs').set({
-          Authorization: `bearer ${token}`,
-        });
+        const response = await api.get('/api/blogs', token);
         expect(response.body).toHaveLength(blogFixture.blogs.length);
       });
 
       test('a specific blog is within the returned blogs', async () => {
-        const response = await api.get('/api/blogs').set({
-          Authorization: `bearer ${token}`,
-        });
+        const response = await api.get('/api/blogs', token);
         const titles = response.body.map((blog: BlogResponse) => blog.title);
         expect(titles).toContain('First class tests');
       });
 
       test('id is set as identifier of a blog', async () => {
-        const response = await api.get('/api/blogs').set({
-          Authorization: `bearer ${token}`,
-        });
+        const response = await api.get('/api/blogs', token);
         const id = response.body.map((blog: BlogResponse) => blog.id)[0];
         expect(id).toBeDefined();
+      });
+    });
+
+    describe('without authorization', () => {
+      test('fails with status code 401 and error message', async () => {
+        const result = await api.post('/api/blogs').expect(401);
+        expect(result.body.error).toContain('token missing');
       });
     });
   });

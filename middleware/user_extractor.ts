@@ -25,12 +25,10 @@ const userExtractor = async (request: Req, response: Response, next: NextFunctio
   }
   const user = await UserModel.findById(decodedToken.id);
 
-  if (!user) {
-    return next(
-      reqestError.create(`User with id=${decodedToken.id} does not exist`, 404),
-    );
+  if (user) {
+    request.user = user;
   }
-  request.user = user;
+
   return next();
 };
 
