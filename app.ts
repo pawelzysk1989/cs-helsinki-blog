@@ -11,7 +11,6 @@ import errorHandler from './middleware/error_handler';
 import requestLogger from './middleware/logger';
 import tokenExtractor from './middleware/token_extractor';
 import unknownEndpoint from './middleware/unknown_endpoint';
-import userExtractor from './middleware/user_extractor';
 import config from './utils/config';
 import logger from './utils/logger';
 
@@ -35,7 +34,7 @@ app.use(tokenExtractor);
 
 app.use('/api/login', loginRouter);
 app.use('/api/users', userRouter);
-app.use('/api/blogs', userExtractor, blogRouter);
+app.use('/api/blogs', blogRouter);
 
 app.use(unknownEndpoint);
 app.use(errorHandler);

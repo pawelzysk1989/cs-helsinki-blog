@@ -1,5 +1,6 @@
 import { Router } from 'express';
 
+import userExtractor from '../middleware/user_extractor';
 import BlogModel from '../models/blog';
 import reqestError from '../utils/request_error';
 
@@ -10,7 +11,7 @@ blogRouter.get('/', async (_request, response) => {
   response.json(blogs);
 });
 
-blogRouter.post('/', async (request, response, next) => {
+blogRouter.post('/', userExtractor, async (request, response, next) => {
   const { user, body: blog } = request;
 
   if (!user) {
@@ -27,7 +28,7 @@ blogRouter.post('/', async (request, response, next) => {
   return response.status(201).json(savedBlog);
 });
 
-blogRouter.delete('/:id', async (request, response, next) => {
+blogRouter.delete('/:id', userExtractor, async (request, response, next) => {
   const {
     user,
     params: { id },
@@ -53,7 +54,7 @@ blogRouter.delete('/:id', async (request, response, next) => {
   return response.status(204).end();
 });
 
-blogRouter.put('/:id', async (request, response, next) => {
+blogRouter.put('/:id', userExtractor, async (request, response, next) => {
   const {
     user,
     body: blog,

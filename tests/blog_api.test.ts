@@ -28,37 +28,28 @@ describe('when there is initially some blogs saved', () => {
   });
 
   describe('GET api/blogs', () => {
-    describe('with authorization', () => {
-      test('blogs are returned as json', async () => {
-        await api
-          .get('/api/blogs', token)
-          .expect(200)
-          .expect('Content-Type', /application\/json/);
-      });
-
-      test('all blogs are returned', async () => {
-        const response = await api.get('/api/blogs', token);
-        expect(response.body).toHaveLength(blogFixture.blogs.length);
-      });
-
-      test('a specific blog is within the returned blogs', async () => {
-        const response = await api.get('/api/blogs', token);
-        const titles = response.body.map((blog: BlogResponse) => blog.title);
-        expect(titles).toContain('First class tests');
-      });
-
-      test('id is set as identifier of a blog', async () => {
-        const response = await api.get('/api/blogs', token);
-        const id = response.body.map((blog: BlogResponse) => blog.id)[0];
-        expect(id).toBeDefined();
-      });
+    test('blogs are returned as json', async () => {
+      await api
+        .get('/api/blogs')
+        .expect(200)
+        .expect('Content-Type', /application\/json/);
     });
 
-    describe('without authorization', () => {
-      test('fails with status code 401 and error message', async () => {
-        const response = await api.get('/api/blogs').expect(401);
-        expect(response.body.error).toContain('token missing');
-      });
+    test('all blogs are returned', async () => {
+      const response = await api.get('/api/blogs');
+      expect(response.body).toHaveLength(blogFixture.blogs.length);
+    });
+
+    test('a specific blog is within the returned blogs', async () => {
+      const response = await api.get('/api/blogs');
+      const titles = response.body.map((blog: BlogResponse) => blog.title);
+      expect(titles).toContain('First class tests');
+    });
+
+    test('id is set as identifier of a blog', async () => {
+      const response = await api.get('/api/blogs');
+      const id = response.body.map((blog: BlogResponse) => blog.id)[0];
+      expect(id).toBeDefined();
     });
   });
 
