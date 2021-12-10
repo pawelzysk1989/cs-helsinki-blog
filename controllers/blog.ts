@@ -71,11 +71,9 @@ blogRouter.put('/:id', userExtractor, async (request, response, next) => {
     return next(reqestError.create(`Blog does not exist`, 404));
   }
 
-  if (String(user._id) !== String(blogToUpdate.user)) {
-    return next(reqestError.create(`User not authorized to update blog`, 403));
-  }
-
-  const updatedBlog = await BlogModel.findByIdAndUpdate(id, blog, { new: true });
+  const updatedBlog = await BlogModel.findByIdAndUpdate(id, blog, { new: true }).populate(
+    'user',
+  );
   return response.status(200).json(updatedBlog);
 });
 

@@ -18,10 +18,12 @@ const removeByUsername = async (username: string) =>
   UserModel.findOneAndRemove({ username });
 
 const findByUsername = async (username: string) => UserModel.findOne({ username });
+const findById = async (id: string) => UserModel.findById(id);
 
 export default {
   getAll,
   create,
   removeByUsername,
   findByUsername,
+  findById,
 };

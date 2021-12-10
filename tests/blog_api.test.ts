@@ -183,11 +183,12 @@ describe('when there is initially some blogs saved', () => {
           .expect('Content-Type', /application\/json/);
 
         const blogsInDbAfter = await blogApiHelper.getAll();
+        const user = await userApiHelper.findById(blogToUpdate.user);
         expect(blogsInDbAfter).toHaveLength(blogsInDb.length);
 
         expect(response.body).toEqual({
           id: blogId,
-          user: blogToUpdate.user,
+          user: user?.toJSON(),
           ...requestBody,
         });
       });

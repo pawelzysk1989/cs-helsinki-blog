@@ -5,7 +5,7 @@ authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhd
 
 POST http://localhost:3001/api/blogs
 content-type: application/json
-authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhd2VsenlzayIsImlkIjoiNjFhNTRmMDNjYThkNTY3M2VmNGZhZWNiIiwiaWF0IjoxNjM4MjIzNjQ1LCJleHAiOjE2MzgyMjcyNDV9.KTt8NN63sxLJ5DoHQn9KAYgYQ7tAfpNZahFF0Dx7O5s
+authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhd2VsenlzayIsImlkIjoiNjFhNTRmMDNjYThkNTY3M2VmNGZhZWNiIiwiaWF0IjoxNjM5MTYyMDczLCJleHAiOjE2MzkxNjU2NzN9.xSlO8LPZh_RPVAewz6HykW2LjGZGOrkQfrIM5PXZhXM
 
 
 {
@@ -36,9 +36,9 @@ authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1hc
 
 ###
 
-PUT http://localhost:3001/api/blogs/61a553d55ef848a0a5a0e8af 
+PUT http://localhost:3001/api/blogs/61b3a10ae04d78d2d1ce4f22 
 content-type: application/json
-authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1hcmlrMTIzNCIsImlkIjoiNjFhNTRlZjVjYThkNTY3M2VmNGZhZWM5IiwiaWF0IjoxNjM4MjIzNjY4LCJleHAiOjE2MzgyMjcyNjh9.rOFaqJvOb9OmsTIzUa4nLI3P4lkpK92VKc4sxuoiSmQ
+authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhd2VsenlzayIsImlkIjoiNjFhNTRmMDNjYThkNTY3M2VmNGZhZWNiIiwiaWF0IjoxNjM5MTYyMDczLCJleHAiOjE2MzkxNjU2NzN9.xSlO8LPZh_RPVAewz6HykW2LjGZGOrkQfrIM5PXZhXM
 
 {
     "title": "New Blog updated",
