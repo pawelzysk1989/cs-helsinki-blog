@@ -8,7 +8,25 @@ const blogRouter = Router();
 
 blogRouter.get('/', async (_request, response) => {
   const blogs = await BlogModel.find({}).populate('user');
-  response.json(blogs);
+  return response.json(blogs);
+});
+
+blogRouter.get('/:id', userExtractor, async (request, response, next) => {
+  const {
+    user,
+    params: { id },
+  } = request;
+
+  if (!user) {
+    return next(reqestError.create(`User does not exist`, 404));
+  }
+
+  const blog = await BlogModel.findById(id).populate('user');
+
+  if (!blog) {
+    return next(reqestError.create(`Blog does not exist`, 404));
+  }
+  return response.json(blog);
 });
 
 blogRouter.post('/', userExtractor, async (request, response, next) => {
