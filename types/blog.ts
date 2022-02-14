@@ -9,6 +9,7 @@ export interface Blog {
 
 export interface BlogDB extends Blog, Document {
   user: ObjectId;
+  comments: ObjectId[];
 }
 
 export interface BlogResponse {

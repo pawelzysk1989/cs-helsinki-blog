@@ -13,6 +13,13 @@ const schema = new Schema<BlogDB>({
     required: true,
     ref: 'User',
   },
+  comments: [
+    {
+      type: Schema.Types.ObjectId,
+      required: true,
+      ref: 'Comment',
+    },
+  ],
 });
 
 schemaHelper.normalize(schema);
