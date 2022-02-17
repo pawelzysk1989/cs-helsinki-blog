@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import userExtractor from '../middleware/user_extractor';
+import userGuard from '../middleware/user_guard';
 import BlogModel from '../models/blog';
 import CommentModel from '../models/comment';
 import reqestError from '../utils/request_error';
@@ -12,15 +12,10 @@ blogRouter.get('/', async (_request, response) => {
   return response.json(blogs);
 });
 
-blogRouter.get('/:id', userExtractor, async (request, response, next) => {
+blogRouter.get('/:id', userGuard, async (request, response, next) => {
   const {
-    user,
     params: { id },
   } = request;
-
-  if (!user) {
-    return next(reqestError.create(`User does not exist`, 404));
-  }
 
   const blog = await BlogModel.findById(id);
 
@@ -51,33 +46,26 @@ blogRouter.get('/:id', userExtractor, async (request, response, next) => {
   return response.json(populatedBlog);
 });
 
-blogRouter.post('/', userExtractor, async (request, response, next) => {
+blogRouter.post('/', userGuard, async (request, response) => {
   const { user, body: blog } = request;
 
-  if (!user) {
-    return next(reqestError.create(`User does not exist`, 404));
-  }
   const newBlog = new BlogModel({
     ...blog,
     user: user._id,
   });
 
   const savedBlog = await (await newBlog.save()).populate('user');
-  user.blogs = user.blogs.concat(savedBlog._id);
+  user.blogs.push(savedBlog._id);
   await user.save();
   return response.status(201).json(savedBlog);
 });
 
-blogRouter.post('/:id/comment', userExtractor, async (request, response, next) => {
+blogRouter.post('/:id/comment', userGuard, async (request, response, next) => {
   const {
     user,
     body: comment,
     params: { id },
   } = request;
-
-  if (!user) {
-    return next(reqestError.create(`User does not exist`, 404));
-  }
 
   const blog = await BlogModel.findById(id);
 
@@ -92,20 +80,16 @@ blogRouter.post('/:id/comment', userExtractor, async (request, response, next) =
   });
 
   const savedComment = await newComment.save();
-  blog.comments = blog.comments.concat(savedComment._id);
+  blog.comments.push(savedComment._id);
   await blog.save();
   return response.status(201).json(savedComment);
 });
 
-blogRouter.delete('/:id', userExtractor, async (request, response, next) => {
+blogRouter.delete('/:id', userGuard, async (request, response, next) => {
   const {
     user,
     params: { id },
   } = request;
-
-  if (!user) {
-    return next(reqestError.create(`User does not exist`, 404));
-  }
 
   const blogToDelete = await BlogModel.findById(id);
 
@@ -113,7 +97,7 @@ blogRouter.delete('/:id', userExtractor, async (request, response, next) => {
     return next(reqestError.create(`Blog does not exist`, 404));
   }
 
-  if (String(user._id) !== String(blogToDelete.user)) {
+  if (user._id.toString() !== blogToDelete.user.toString()) {
     return next(reqestError.create(`User not authorized to delete blog`, 403));
   }
 
@@ -123,16 +107,11 @@ blogRouter.delete('/:id', userExtractor, async (request, response, next) => {
   return response.status(204).end();
 });
 
-blogRouter.put('/:id', userExtractor, async (request, response, next) => {
+blogRouter.put('/:id', userGuard, async (request, response, next) => {
   const {
-    user,
     body: blog,
     params: { id },
   } = request;
-
-  if (!user) {
-    return next(reqestError.create(`User does not exist`, 404));
-  }
 
   const blogToUpdate = await BlogModel.findById(id);
 
