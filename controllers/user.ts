@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { Router } from 'express';
 
-import userGuard from '../middleware/user_guard';
+import authGuard from '../middleware/auth_guard';
 import UserModel from '../models/user';
 import { UserNotRegistered } from '../types';
 import reqestError from '../utils/request_error';
@@ -14,7 +14,12 @@ userRouter.get('/', async (_request, response) => {
   response.json(users);
 });
 
-userRouter.get('/:id', userGuard, async (request, response, next) => {
+userRouter.get('/logged', authGuard, async (request, response) => {
+  const user = await request.user.populate('blogs');
+  return response.json(user);
+});
+
+userRouter.get('/:id', async (request, response, next) => {
   const {
     params: { id },
   } = request;
@@ -27,7 +32,7 @@ userRouter.get('/:id', userGuard, async (request, response, next) => {
   return response.json(user);
 });
 
-userRouter.post('/', userGuard, async (request, response, next) => {
+userRouter.post('/', authGuard, async (request, response, next) => {
   const { body } = request;
 
   const newUser: UserNotRegistered = body;

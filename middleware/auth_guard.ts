@@ -14,7 +14,7 @@ declare global {
   }
 }
 
-const userGuard = async (request: Req, response: Response, next: NextFunction) => {
+const authGuard = async (request: Req, response: Response, next: NextFunction) => {
   if (!request.token) {
     return next(reqestError.create('token missing', 401));
   }
@@ -30,8 +30,7 @@ const userGuard = async (request: Req, response: Response, next: NextFunction) =
   }
 
   request.user = user;
-
   return next();
 };
 
-export default userGuard;
+export default authGuard;

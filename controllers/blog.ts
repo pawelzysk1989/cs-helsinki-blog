@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import userGuard from '../middleware/user_guard';
+import authGuard from '../middleware/auth_guard';
 import BlogModel from '../models/blog';
 import CommentModel from '../models/comment';
 import reqestError from '../utils/request_error';
@@ -12,7 +12,7 @@ blogRouter.get('/', async (_request, response) => {
   return response.json(blogs);
 });
 
-blogRouter.get('/:id', userGuard, async (request, response, next) => {
+blogRouter.get('/:id', authGuard, async (request, response, next) => {
   const {
     params: { id },
   } = request;
@@ -46,7 +46,7 @@ blogRouter.get('/:id', userGuard, async (request, response, next) => {
   return response.json(populatedBlog);
 });
 
-blogRouter.post('/', userGuard, async (request, response) => {
+blogRouter.post('/', authGuard, async (request, response) => {
   const { user, body: blog } = request;
 
   const newBlog = new BlogModel({
@@ -60,7 +60,7 @@ blogRouter.post('/', userGuard, async (request, response) => {
   return response.status(201).json(savedBlog);
 });
 
-blogRouter.post('/:id/comment', userGuard, async (request, response, next) => {
+blogRouter.post('/:id/comment', authGuard, async (request, response, next) => {
   const {
     user,
     body: comment,
@@ -85,7 +85,7 @@ blogRouter.post('/:id/comment', userGuard, async (request, response, next) => {
   return response.status(201).json(savedComment);
 });
 
-blogRouter.delete('/:id', userGuard, async (request, response, next) => {
+blogRouter.delete('/:id', authGuard, async (request, response, next) => {
   const {
     user,
     params: { id },
@@ -107,7 +107,7 @@ blogRouter.delete('/:id', userGuard, async (request, response, next) => {
   return response.status(204).end();
 });
 
-blogRouter.put('/:id', userGuard, async (request, response, next) => {
+blogRouter.put('/:id', authGuard, async (request, response, next) => {
   const {
     body: blog,
     params: { id },
