@@ -5,12 +5,10 @@ import express from 'express';
 import mongoose from 'mongoose';
 
 import blogRouter from './controllers/blog';
-import loginRouter from './controllers/login';
 import testingRouter from './controllers/testing';
 import userRouter from './controllers/user';
 import errorHandler from './middleware/error_handler';
 import requestLogger from './middleware/logger';
-import tokenExtractor from './middleware/token_extractor';
 import unknownEndpoint from './middleware/unknown_endpoint';
 import config from './utils/config';
 import logger from './utils/logger';
@@ -31,9 +29,7 @@ mongoose
 app.use(cors());
 app.use(express.json());
 app.use(requestLogger);
-app.use(tokenExtractor);
 
-app.use('/api/login', loginRouter);
 app.use('/api/users', userRouter);
 app.use('/api/blogs', blogRouter);
 

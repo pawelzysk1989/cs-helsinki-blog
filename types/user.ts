@@ -1,17 +1,11 @@
 import { Document, ObjectId } from 'mongoose';
 
-export interface UserNotRegistered {
+export interface User {
   username: string;
-  name?: string;
+  email: string;
   password: string;
 }
 
-export interface UserRegistered {
-  username: string;
-  name: string;
-  passwordHash: string;
-}
-
-export interface UserDB extends UserRegistered, Document {
+export interface UserDB extends User, Document {
   blogs: ObjectId[];
 }

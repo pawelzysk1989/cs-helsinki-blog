@@ -1,36 +1,24 @@
-import { NextFunction, Request as Req, Response } from 'express';
-import jwt from 'jsonwebtoken';
+import { Request } from 'express';
+import { auth } from 'express-oauth2-jwt-bearer';
 
-import UserModel from '../models/user';
-import { UserDB } from '../types';
 import config from '../utils/config';
-import reqestError from '../utils/request_error';
 
-declare global {
-  namespace Express {
-    interface Request {
-      user: UserDB;
-    }
+declare module 'express-oauth2-jwt-bearer' {
+  interface JWTPayload {
+    ['https://blog-app.com']: {
+      user_id: string;
+    };
   }
 }
 
-const authGuard = async (request: Req, response: Response, next: NextFunction) => {
-  if (!request.token) {
-    return next(reqestError.create('token missing', 401));
-  }
-
-  const decodedToken = jwt.verify(request.token, config.SECRET);
-  if (typeof decodedToken === 'string' || !decodedToken.id) {
-    return response.status(401).json({ error: 'token invalid' });
-  }
-  const user = await UserModel.findById(decodedToken.id);
-
-  if (!user) {
-    return next(reqestError.create(`User does not exist`, 404));
-  }
-
-  request.user = user;
-  return next();
+export const getUserId = (authOptions: Request['auth']) => {
+  return authOptions?.payload['https://blog-app.com'].user_id;
 };
+
+const authGuard = auth({
+  audience: config.AUTH_AUDIENCE,
+  issuerBaseURL: config.AUTH_ISSUER_URL,
+  tokenSigningAlg: 'RS256',
+});
 
 export default authGuard;

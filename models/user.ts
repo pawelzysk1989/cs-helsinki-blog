@@ -1,18 +1,18 @@
 import mongoose from 'mongoose';
 
 import { UserDB } from '../types';
-import reqestError from '../utils/request_error';
+import requestError from '../utils/request_error';
 import schemaHelper from '../utils/schema_helper';
 
 const schema = new mongoose.Schema<UserDB>({
-  username: {
+  email: {
     type: String,
-    required: true,
-    minlength: 3,
     unique: true,
   },
-  name: String,
-  passwordHash: { type: String, required: true },
+  username: {
+    type: String,
+    unique: true,
+  },
   blogs: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -28,12 +28,12 @@ schema.post('save', (err: any, _doc: any, next: Function) => {
     err.code === 11000 &&
     'username' in err.keyValue
   ) {
-    next(reqestError.create(`username ${err.keyValue.username} is already taken`));
+    next(requestError.create(`username ${err.keyValue.username} is already taken`));
   } else {
     next(err);
   }
 });
 
-schemaHelper.normalize(schema, ['passwordHash']);
+schemaHelper.normalize(schema, ['password']);
 
 export default mongoose.model('User', schema);

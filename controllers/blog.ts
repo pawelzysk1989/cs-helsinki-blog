@@ -1,8 +1,10 @@
 import { Router } from 'express';
 
-import authGuard from '../middleware/auth_guard';
+import authGuard, { getUserId } from '../middleware/auth_guard';
 import BlogModel from '../models/blog';
 import CommentModel from '../models/comment';
+import UserModel from '../models/user';
+import { UserDB } from '../types';
 import reqestError from '../utils/request_error';
 
 const blogRouter = Router();
@@ -46,23 +48,30 @@ blogRouter.get('/:id', authGuard, async (request, response, next) => {
   return response.json(populatedBlog);
 });
 
-blogRouter.post('/', authGuard, async (request, response) => {
-  const { user, body: blog } = request;
+blogRouter.post('/', authGuard, async (request, response, next) => {
+  const { auth, body: blog } = request;
+
+  const userId = getUserId(auth);
+
+  const user = await UserModel.findById(userId).populate('blogs');
+
+  if (!user) {
+    return next(reqestError.create('User does not exist', 404));
+  }
 
   const newBlog = new BlogModel({
     ...blog,
     user: user._id,
   });
 
-  const savedBlog = await (await newBlog.save()).populate('user');
+  const savedBlog = await newBlog.save();
   user.blogs.push(savedBlog._id);
   await user.save();
-  return response.status(201).json(savedBlog);
+  return response.status(201).json(savedBlog.populate('user'));
 });
 
 blogRouter.post('/:id/comment', authGuard, async (request, response, next) => {
   const {
-    user,
     body: comment,
     params: { id },
   } = request;
@@ -75,7 +84,7 @@ blogRouter.post('/:id/comment', authGuard, async (request, response, next) => {
 
   const newComment = new CommentModel({
     ...comment,
-    user: user._id,
+    user: blog.user,
     blog: blog._id,
   });
 
@@ -87,7 +96,7 @@ blogRouter.post('/:id/comment', authGuard, async (request, response, next) => {
 
 blogRouter.delete('/:id', authGuard, async (request, response, next) => {
   const {
-    user,
+    auth,
     params: { id },
   } = request;
 
@@ -97,9 +106,13 @@ blogRouter.delete('/:id', authGuard, async (request, response, next) => {
     return next(reqestError.create(`Blog does not exist`, 404));
   }
 
-  if (user._id.toString() !== blogToDelete.user.toString()) {
+  const userId = getUserId(auth);
+
+  if (userId !== blogToDelete.user.toString()) {
     return next(reqestError.create(`User not authorized to delete blog`, 403));
   }
+
+  const { user }: { user: UserDB } = await blogToDelete.populate('user');
 
   user.blogs = user.blogs.filter((blogId) => String(blogId) !== id);
   await user.save();

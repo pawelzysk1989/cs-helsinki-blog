@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
+import { InvalidTokenError } from 'express-oauth2-jwt-bearer';
 import { Error as MongooseError } from 'mongoose';
 
 import { RequestError } from '../types';
@@ -10,8 +10,7 @@ const errorHandler = (
     | MongooseError.CastError
     | MongooseError.ValidationError
     | RequestError
-    | TokenExpiredError
-    | JsonWebTokenError,
+    | InvalidTokenError,
   _request: Request,
   response: Response,
   next: NextFunction,
@@ -33,14 +32,9 @@ const errorHandler = (
       error: error.message,
     });
   }
-  if (error.name === 'JsonWebTokenError') {
+  if (error instanceof InvalidTokenError) {
     return response.status(401).json({
-      error: 'invalid token',
-    });
-  }
-  if (error.name === 'TokenExpiredError') {
-    return response.status(401).json({
-      error: 'token expired',
+      error: error.message,
     });
   }
 
